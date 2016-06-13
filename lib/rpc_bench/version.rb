@@ -1,3 +1,3 @@
-module RpcBench
-  VERSION = "0.0.1"
+module RPCBench
+  VERSION = "0.0.2"
 end

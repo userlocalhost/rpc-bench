@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'rpc_bench'
+
+optobj = RPCBench::Options.new
+
+begin
+  options = optobj.parse
+rescue OptionParser::MissingArgument, OptionParser::InvalidOption => e
+  puts "[warning] failed to parse command line option (#{e})"
+  puts optobj.usage
+
+  exit 1
+end

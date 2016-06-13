@@ -1,5 +1,6 @@
 require "rpc_bench/version"
+require "rpc_bench/options"
 
-module RpcBench
+module RPCBench
   # Your code goes here...
 end
