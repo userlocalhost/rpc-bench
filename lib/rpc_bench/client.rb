@@ -9,6 +9,8 @@ module RPCBench
       case opts[:mode]
       when 'rabbitmq'
         @driver = RabbitMQ.new opts
+      when 'grpc'
+        @driver = GRPC.new opts
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
@@ -17,11 +19,13 @@ module RPCBench
     end
 
     def run
+      threads = []
       (1..@bench_conc).each do
-        Thread.new do
+        threads << Thread.new do
           (1..@bench_num).each {|n| @driver.send(1)}
         end
       end
+      threads.each(&:join)
 
       while(! finished?) do
         # nop
@@ -32,12 +36,16 @@ module RPCBench
 
     def callback(msg)
       @resp_count += 1
-      puts "[RPCBench::Client] count: #{@resp_count}"
     end
 
     private
     def finished?
-      @resp_count >= req_total
+      if @driver.instance_of? GRPC
+        # GRPC framework get response synchronously
+        true
+      else
+        @resp_count >= req_total
+      end
     end
 
     def req_total

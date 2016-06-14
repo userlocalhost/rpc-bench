@@ -1,9 +1,5 @@
 module RPCBench
   class Driver
-    def initialize opts
-      @client = nil
-    end
-
     def set_handler handler
       @handler = handler
     end
@@ -14,6 +10,10 @@ module RPCBench
       rescue NameError => e
         puts "[warning] failed to send request (#{e})"
       end
+    end
+
+    def close
+      # nop
     end
   end
 end

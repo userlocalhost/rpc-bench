@@ -5,8 +5,6 @@ module RPCBench
     QNAME = 'rpc_queue'
 
     def initialize opts
-      super opts
-
       @conn = Bunny.new(host: opts[:host], port: opts[:port])
       @conn.start
 
