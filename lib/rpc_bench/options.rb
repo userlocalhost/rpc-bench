@@ -5,6 +5,8 @@ module RPCBench
     MODE_VALUES = ['rabbitmq', 'rabbitmq-stomp', 'newtmq', 'zeromq', 'grpc']
 
     OPT_DEFAULT = {
+      :host => 'localhost',
+      :port => 5672,
       :mode => 'rabbitmq',
       :conc => 10,
       :num => 100,
@@ -20,7 +22,11 @@ module RPCBench
       @options = OPT_DEFAULT
       @opt = OptionParser.new
       
-      sets(:mode, '-m', '--mode m', 
+      sets(:host, '-s', '--server s',
+           'specify server to send request')
+      setn(:port, '-p', '--port s',
+           'specify port number on which server listens')
+      sets(:mode, '-m', '--mode m',
            'specify benchmark mode {rabbitmq|rabbitmq-stomp|newtmq|zeromq|grpc} [default: rabbitmq]')
       setn(:conc, '-c', '--concurrency c',
            'specify concurrent level [default: 10]')

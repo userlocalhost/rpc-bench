@@ -12,3 +12,7 @@ rescue OptionParser::MissingArgument, OptionParser::InvalidOption => e
 
   exit 1
 end
+
+client = RPCBench::Client.new(options)
+
+client.run
