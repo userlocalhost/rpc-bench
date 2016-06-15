@@ -11,6 +11,8 @@ module RPCBench
         @driver = RabbitMQ.new opts
       when 'grpc'
         @driver = GRPC.new opts
+      when 'zeromq'
+        @driver = ZeroMQ.new opts
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
@@ -36,6 +38,7 @@ module RPCBench
 
     def callback(msg)
       @resp_count += 1
+      puts "[Client] (callback) #{msg}"
     end
 
     private

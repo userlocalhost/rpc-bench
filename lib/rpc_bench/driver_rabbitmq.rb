@@ -23,7 +23,7 @@ module RPCBench
       @conn.close
     end
 
-    def send_request(data)
+    def send_request data
       @exchange.publish(data.to_s, :routing_key => QNAME, :reply_to => @reply_queue.name)
     end
   end
