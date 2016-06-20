@@ -5,34 +5,16 @@ require 'grpc'
 require 'thread'
 
 module RPCBench
-  class GRPC < Driver
+  module GRPC
     SERVICE_NAME = 'rpc_bench'
-
-    def initialize opts
-      @opts = opts
-    end
-
-    def send_request data, count
-      stub = Calc::Stub.new("#{@opts[:host]}:#{@opts[:port]}", :this_channel_is_insecure)
-
-      (1..count).each do |_|
-        p stub.calc_tmp(TmpRequest.new(num: data)).num
-      end
-    end
-
-    ##
-    # Message Classes
-    #
-    class TmpRequest < Protobuf::Message; end
-    class TmpReply < Protobuf::Message; end
 
     ##
     # Message Fields
     #
-    class TmpRequest
+    class TmpRequest < Protobuf::Message
       required :int32, :num, 1
     end
-    class TmpReply
+    class TmpReply < Protobuf::Message
       required :int32, :num, 1
     end
 
@@ -54,6 +36,50 @@ module RPCBench
         rpc :CalcTmp, TmpRequest, TmpReply
       end
       Stub = Service.rpc_stub_class
+    end
+
+    class Client < Driver
+      def initialize opts
+        @opts = opts
+      end
+
+      def sendmsg stub, data
+        begin
+          p stub.calc_tmp(RPCBench::GRPC::TmpRequest.new(num: data)).num
+        rescue ::GRPC::BadStatus => e
+          if(e.code == 8)
+            sendmsg stub, data
+          else
+            puts "[warning] other error is occurrs"
+          end
+        end
+      end
+
+      def send_request(data, count)
+        stub = RPCBench::GRPC::Calc::Stub.new("#{@opts[:host]}:#{@opts[:port]}", :this_channel_is_insecure)
+
+        (1..count).each do |_|
+          sendmsg stub, data
+        end
+      end
+    end
+    class Server < Driver
+      def initialize opts
+        @opts = opts
+      end
+
+      def run
+        s = ::GRPC::RpcServer.new
+        s.add_http2_port("#{@opts[:host]}:#{@opts[:port]}", :this_port_is_insecure)
+        s.handle(MyCalc)
+        s.run_till_terminated
+      end
+
+      class MyCalc < RPCBench::GRPC::Calc::Service
+        def calc_tmp(value, _unused_call)
+          TmpReply.new(num: value.num)
+        end
+      end
     end
   end
 end

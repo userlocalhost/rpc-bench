@@ -4,6 +4,8 @@ module RPCBench
       case opts[:mode]
       when 'rabbitmq'
         @driver = RabbitMQ::Server.new opts
+      when 'grpc'
+        @driver = GRPC::Server.new opts
       when 'stomp'
         @driver = Stomp::Server.new opts
       else

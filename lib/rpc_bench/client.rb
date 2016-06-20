@@ -10,7 +10,7 @@ module RPCBench
       when 'rabbitmq'
         @driver = RabbitMQ::Client.new opts
       when 'grpc'
-        @driver = GRPC.new opts
+        @driver = GRPC::Client.new opts
       when 'zeromq'
         @driver = ZeroMQ.new opts
       when 'stomp'
