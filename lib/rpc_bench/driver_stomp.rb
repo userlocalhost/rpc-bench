@@ -18,7 +18,7 @@ module RPCBench
           })
         end
         (1..count).each do |_|
-          p conn.receive.body
+          conn.receive.body
         end
   
         conn.disconnect

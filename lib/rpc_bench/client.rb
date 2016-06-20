@@ -8,7 +8,7 @@ module RPCBench
 
       case opts[:mode]
       when 'rabbitmq'
-        @driver = RabbitMQ.new opts
+        @driver = RabbitMQ::Client.new opts
       when 'grpc'
         @driver = GRPC.new opts
       when 'zeromq'
@@ -37,7 +37,7 @@ module RPCBench
         # nop
       end
 
-      puts "Time: #{Time.now - t_start}"
+      puts "Time: #{Time.now - t_start} [#{@resp_count}]"
 
       @driver.close
     end
@@ -48,7 +48,7 @@ module RPCBench
 
     private
     def finished?
-      if @driver.instance_of? RabbitMQ
+      if @driver.instance_of? RabbitMQ::Client
         @resp_count >= req_total
       else
         # other drivers get response synchronously

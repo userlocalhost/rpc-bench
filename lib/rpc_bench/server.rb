@@ -2,6 +2,8 @@ module RPCBench
   class Server
     def initialize(opts)
       case opts[:mode]
+      when 'rabbitmq'
+        @driver = RabbitMQ::Server.new opts
       when 'stomp'
         @driver = Stomp::Server.new opts
       else
