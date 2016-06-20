@@ -13,6 +13,8 @@ module RPCBench
         @driver = GRPC.new opts
       when 'zeromq'
         @driver = ZeroMQ.new opts
+      when 'stomp'
+        @driver = Stomp.new opts
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
@@ -21,10 +23,12 @@ module RPCBench
     end
 
     def run
+      t_start = Time.now
+
       threads = []
       (1..@bench_conc).each do
         threads << Thread.new do
-          (1..@bench_num).each {|n| @driver.send(1)}
+          @driver.send(1, @bench_num)
         end
       end
       threads.each(&:join)
@@ -33,21 +37,22 @@ module RPCBench
         # nop
       end
 
+      puts "Time: #{Time.now - t_start}"
+
       @driver.close
     end
 
     def callback(msg)
       @resp_count += 1
-      puts "[Client] (callback) #{msg}"
     end
 
     private
     def finished?
-      if @driver.instance_of? GRPC
-        # GRPC framework get response synchronously
-        true
-      else
+      if @driver.instance_of? RabbitMQ
         @resp_count >= req_total
+      else
+        # other drivers get response synchronously
+        true
       end
     end
 

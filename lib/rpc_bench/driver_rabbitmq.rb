@@ -18,13 +18,15 @@ module RPCBench
       end
     end
 
+    def send_request data, count
+      (1..count).each do |_|
+        @exchange.publish(data.to_s, :routing_key => QNAME, :reply_to => @reply_queue.name)
+      end
+    end
+
     def close
       @ch.close
       @conn.close
-    end
-
-    def send_request data
-      @exchange.publish(data.to_s, :routing_key => QNAME, :reply_to => @reply_queue.name)
     end
   end
 end

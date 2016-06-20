@@ -9,11 +9,15 @@ module RPCBench
     SERVICE_NAME = 'rpc_bench'
 
     def initialize opts
-      @stub = Calc::Stub.new("#{opts[:host]}:#{opts[:port]}", :this_channel_is_insecure)
+      @opts = opts
     end
 
-    def send_request data
-      @stub.calc_tmp(TmpRequest.new(num: data)).num
+    def send_request data, count
+      stub = Calc::Stub.new("#{@opts[:host]}:#{@opts[:port]}", :this_channel_is_insecure)
+
+      (1..count).each do |_|
+        p stub.calc_tmp(TmpRequest.new(num: data)).num
+      end
     end
 
     ##

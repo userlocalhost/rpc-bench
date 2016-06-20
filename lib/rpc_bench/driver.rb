@@ -4,9 +4,9 @@ module RPCBench
       @handler = handler
     end
 
-    def send(data)
+    def send(data, count)
       begin
-        send_request(data)
+        send_request(data, count)
       rescue NameError => e
         puts "[warning] failed to send request (#{e})"
       end

@@ -2,7 +2,7 @@ require "optparse"
 
 module RPCBench
   class Options
-    MODE_VALUES = ['rabbitmq', 'rabbitmq-stomp', 'newtmq', 'zeromq', 'grpc']
+    MODE_VALUES = ['rabbitmq', 'stomp', 'zeromq', 'grpc']
 
     OPT_DEFAULT = {
       :host => 'localhost',
