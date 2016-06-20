@@ -8,8 +8,6 @@ module RPCBench
       :host => 'localhost',
       :port => 5672,
       :mode => 'rabbitmq',
-      :conc => 10,
-      :num => 100,
     }
     def initialize
       def sets(key, short, long, desc)
@@ -22,16 +20,12 @@ module RPCBench
       @options = OPT_DEFAULT
       @opt = OptionParser.new
       
-      sets(:host, '-s', '--server s',
-           'specify server to send request')
-      setn(:port, '-p', '--port s',
-           'specify port number on which server listens')
       sets(:mode, '-m', '--mode m',
            'specify benchmark mode {rabbitmq|rabbitmq-stomp|newtmq|zeromq|grpc} [default: rabbitmq]')
-      setn(:conc, '-c', '--concurrency c',
-           'specify concurrent level [default: 10]')
-      setn(:num,  '-n', '--number n',
-           'specify request number per thread [default: 100]')
+      sets(:host, '-s', '--server s',
+           'specify server to send request')
+      setn(:port, '-p', '--port p',
+           'specify port number on which server listens')
     end
 
     def parse
@@ -53,6 +47,27 @@ module RPCBench
       ret &= MODE_VALUES.include? @options[:mode]
       ret &= @options[:conc].is_a? Integer
       ret &= @options[:num].is_a? Integer
+    end
+  end
+
+  class ServerOptions < Options
+    def initialize
+      super
+    end
+  end
+  class ClientOptions < Options
+    OPT_DEFAULT.merge!({
+      :conc => 10,
+      :num => 100,
+    })
+
+    def initialize
+      super
+
+      setn(:conc, '-c', '--concurrency c',
+           'specify concurrent level [default: 10]')
+      setn(:num,  '-n', '--number n',
+           'specify request number per thread [default: 100]')
     end
   end
 end

@@ -14,7 +14,7 @@ module RPCBench
       when 'zeromq'
         @driver = ZeroMQ.new opts
       when 'stomp'
-        @driver = Stomp.new opts
+        @driver = Stomp::Client.new opts
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
@@ -26,9 +26,9 @@ module RPCBench
       t_start = Time.now
 
       threads = []
-      (1..@bench_conc).each do
+      (1..@bench_conc).each do |x|
         threads << Thread.new do
-          @driver.send(1, @bench_num)
+          @driver.send(x, @bench_num)
         end
       end
       threads.each(&:join)
