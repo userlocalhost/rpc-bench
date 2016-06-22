@@ -12,7 +12,7 @@ module RPCBench
       when 'grpc'
         @driver = GRPC::Client.new opts
       when 'zeromq'
-        @driver = ZeroMQ.new opts
+        @driver = ZeroMQ::Client.new opts
       when 'stomp'
         @driver = Stomp::Client.new opts
       else

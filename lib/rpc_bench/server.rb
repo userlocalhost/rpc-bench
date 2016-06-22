@@ -6,6 +6,8 @@ module RPCBench
         @driver = RabbitMQ::Server.new opts
       when 'grpc'
         @driver = GRPC::Server.new opts
+      when 'zeromq'
+        @driver = ZeroMQ::Server.new opts
       when 'stomp'
         @driver = Stomp::Server.new opts
       else

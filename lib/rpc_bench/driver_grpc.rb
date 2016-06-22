@@ -77,7 +77,7 @@ module RPCBench
 
       class MyCalc < RPCBench::GRPC::Calc::Service
         def calc_tmp(value, _unused_call)
-          TmpReply.new(num: value.num)
+          TmpReply.new(num: @handler.callback(value.num))
         end
       end
     end
