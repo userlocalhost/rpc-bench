@@ -2,53 +2,62 @@ require 'bunny'
 
 module RPCBench
   module RabbitMQ
-    class Base < Driver
-      QNAME = 'rpc_queue'
+    QNAME = 'rpc_queue'
 
+    class Client < Driver
       def initialize opts
-        @conn = Bunny.new(host: opts[:host], port: opts[:port])
-        @conn.start
-  
-        @ch = @conn.create_channel
-        @exchange = @ch.default_exchange
-      end
-  
-      def close
-        @ch.close
-        @conn.close
-      end
-    end
-
-    class Client < Base
-      def initialize opts
-        super opts
-  
-        @reply_queue = @ch.queue("", :exclusive => true)
-  
-        @reply_queue.subscribe do |_, _, data|
-          @handler.callback(data)
-        end
+        @opts = opts
       end
   
       def send_request data, count
+        results = []
+
+        conn = Bunny.new(host: @opts[:host], port: @opts[:port])
+        conn.start
+  
+        ch = conn.create_channel
+        exchange = ch.default_exchange
+  
+        reply_queue = ch.queue("", :exclusive => true)
         (1..count).each do |_|
-          @exchange.publish(data.to_s, :routing_key => QNAME, :reply_to => @reply_queue.name)
+          exchange.publish(data.to_s, :routing_key => RPCBench::RabbitMQ::QNAME, :reply_to => reply_queue.name)
         end
+  
+        reply_queue.subscribe(:block => true) do |dinfo, _, data|
+          results << data.to_i
+
+          if results.size >= count
+            dinfo.consumer.cancel
+            break
+          end
+        end
+        ch.close
+        conn.close
+
+        results
       end
     end
-    class Server < Base
+    class Server < Driver
       def initialize opts
-        super opts
-
-        @queue = @ch.queue QNAME
+        @opts = opts
       end
 
       def run
-        @queue.subscribe(:block => true) do |_, attr, data|
-          resp = @handler.callback(data)
+        conn = Bunny.new(host: @opts[:host], port: @opts[:port])
+        conn.start
 
-          @exchange.publish(resp, :routing_key => attr.reply_to, :correlation_id => attr.correlation_id)
+        ch = conn.create_channel
+
+        queue = ch.queue RPCBench::RabbitMQ::QNAME
+        exchange = ch.default_exchange
+        queue.subscribe(:block => true) do |_, attr, data|
+          resp = @handler.callback(data.to_i)
+
+          exchange.publish(resp.to_s, :routing_key => attr.reply_to, :correlation_id => attr.correlation_id)
         end
+
+        ch.close
+        conn.close
       end
     end
   end

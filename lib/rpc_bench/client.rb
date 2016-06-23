@@ -4,8 +4,6 @@ module RPCBench
       @bench_conc = opts[:conc]
       @bench_num = opts[:num]
 
-      @resp_count = 0
-
       case opts[:mode]
       when 'rabbitmq'
         @driver = RabbitMQ::Client.new opts
@@ -18,8 +16,10 @@ module RPCBench
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
+    end
 
-      @driver.set_handler self
+    def validate? results
+      results.all? {|x| x == 2}
     end
 
     def run
@@ -28,36 +28,20 @@ module RPCBench
       threads = []
       (1..@bench_conc).each do |x|
         threads << Thread.new do
-          @driver.send(x, @bench_num)
+          @driver.send(1, @bench_num)
         end
       end
-      threads.each(&:join)
 
-      while(! finished?) do
-        # nop
+      results = threads.map(&:value).flatten
+      unless(validate? results)
+        puts "[error] failed to get accurate result"
       end
-
-      puts "Time: #{Time.now - t_start} [#{@resp_count}]"
 
       @driver.close
-    end
 
-    def callback(msg)
-      @resp_count += 1
-    end
+      t_end = Time.now
 
-    private
-    def finished?
-      if @driver.instance_of? RabbitMQ::Client
-        @resp_count >= req_total
-      else
-        # other drivers get response synchronously
-        true
-      end
-    end
-
-    def req_total
-      @req_total ||= @bench_conc * @bench_num
+      puts "Time: #{t_end - t_start}"
     end
   end
 end

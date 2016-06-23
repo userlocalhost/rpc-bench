@@ -12,25 +12,27 @@ module RPCBench
       def initialize opts
         super opts
       end
-
+  
       def send_request data, count
         sock = @context.socket(ZMQ::REQ)
         sock.connect("tcp://#{@opts[:host]}:#{@opts[:port]}")
-
+  
+        results = []
         (1..count).each do |_|
           # sending request
           sock.send_string data.to_s
-
+  
           # receiving reply
           reply = ''
           sock.recv_string(reply)
 
-          puts reply
+          results << reply.slice(/[0-9]+/).to_i
         end
-
         sock.close
-      end
 
+        results
+      end
+  
       def close
         @context.terminate
       end
@@ -49,10 +51,10 @@ module RPCBench
 
           sock.recv_string(request)
 
-          data = request.inspect
+          data = request.inspect.slice(/[0-9]+/).to_i
 
           # Send reply back to client
-          sock.send_string(@handler.callback(data))
+          sock.send_string(@handler.callback(data).to_s)
         end
       end
     end

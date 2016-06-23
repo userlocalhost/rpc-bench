@@ -11,17 +11,20 @@ module RPCBench
       end
   
       def send_request data, count
+        results = []
+
         conn = ::Stomp::Connection.open('guest', 'guest', @opts[:host], @opts[:port])
         (1..count).each do |x|
-          conn.publish(RPCBench::Stomp::QNAME, "#{data}-#{x}", {
+          conn.publish(RPCBench::Stomp::QNAME, data.to_s, {
             'reply-to' => TEMP_QNAME
           })
         end
         (1..count).each do |_|
-          conn.receive.body
+          results << conn.receive.body.slice(/[0-9]*/).to_i
         end
-  
         conn.disconnect
+
+        results
       end
     end
     class Server < Driver
@@ -35,9 +38,9 @@ module RPCBench
         conn.subscribe RPCBench::Stomp::QNAME
         loop do
           msg = conn.receive
-          reply = @handler.callback(msg.body)
+          reply = @handler.callback(msg.body.to_i)
   
-          conn.publish(msg.headers['reply-to'], reply)
+          conn.publish(msg.headers['reply-to'], reply.to_s)
         end
       end
     end

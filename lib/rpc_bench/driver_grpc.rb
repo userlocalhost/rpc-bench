@@ -42,10 +42,10 @@ module RPCBench
       def initialize opts
         @opts = opts
       end
-
+  
       def sendmsg stub, data
         begin
-          p stub.calc_tmp(RPCBench::GRPC::TmpRequest.new(num: data)).num
+          stub.calc_tmp(RPCBench::GRPC::TmpRequest.new(num: data)).num
         rescue ::GRPC::BadStatus => e
           if(e.code == 8)
             sendmsg stub, data
@@ -54,21 +54,32 @@ module RPCBench
           end
         end
       end
-
+  
       def send_request(data, count)
         stub = RPCBench::GRPC::Calc::Stub.new("#{@opts[:host]}:#{@opts[:port]}", :this_channel_is_insecure)
-
+  
+        results = []
         (1..count).each do |_|
-          sendmsg stub, data
+          results << sendmsg(stub, data)
         end
+
+        results
       end
     end
     class Server < Driver
+      @@handler = nil
+
       def initialize opts
         @opts = opts
       end
 
+      def self.handler
+        @@handler
+      end
+
       def run
+        @@handler = @handler
+
         s = ::GRPC::RpcServer.new
         s.add_http2_port("#{@opts[:host]}:#{@opts[:port]}", :this_port_is_insecure)
         s.handle(MyCalc)
@@ -76,8 +87,8 @@ module RPCBench
       end
 
       class MyCalc < RPCBench::GRPC::Calc::Service
-        def calc_tmp(value, _unused_call)
-          TmpReply.new(num: @handler.callback(value.num))
+        def calc_tmp(value, obj)
+          TmpReply.new(num: RPCBench::GRPC::Server.handler.callback(value.num))
         end
       end
     end

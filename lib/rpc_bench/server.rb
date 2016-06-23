@@ -22,7 +22,7 @@ module RPCBench
     end
 
     def callback(v)
-      "reply: #{v}"
+      v.to_i + 1
     end
   end
 end
