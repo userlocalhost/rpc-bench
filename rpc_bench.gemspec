@@ -5,7 +5,7 @@ require 'rpc_bench/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "rpc-bench"
-  spec.version       = RpcBench::VERSION
+  spec.version       = RPCBench::VERSION
   spec.authors       = ["Hiroyasu OHYAMA"]
   spec.email         = ["user.localhost2000@gmail.com"]
 
@@ -17,4 +17,11 @@ Gem::Specification.new do |spec|
   spec.bindir        = "bin"
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_runtime_dependency "grpc", "0.14.1"
+  spec.add_runtime_dependency "grpc-tools", "0.14.1"
+  spec.add_runtime_dependency "stomp", "1.4.0"
+  spec.add_runtime_dependency "bunny", "2.3.1"
+  spec.add_runtime_dependency "ffi-rzmq", "2.0.4"
+  spec.add_runtime_dependency "protobuf", "3.6.9"
 end
