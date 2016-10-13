@@ -2,7 +2,7 @@ require "optparse"
 
 module RPCBench
   class Options
-    MODE_VALUES = ['rabbitmq', 'stomp', 'zeromq', 'grpc']
+    MODE_VALUES = ['rabbitmq', 'stomp', 'zeromq', 'grpc', 'nats']
 
     OPT_DEFAULT = {
       :host => 'localhost',
@@ -21,7 +21,7 @@ module RPCBench
       @opt = OptionParser.new
       
       sets(:mode, '-m', '--mode m',
-           'specify benchmark mode {rabbitmq|rabbitmq-stomp|newtmq|zeromq|grpc} [default: rabbitmq]')
+           'specify benchmark mode {rabbitmq|stomp|newtmq|zeromq|grpc|nats} [default: rabbitmq]')
       sets(:host, '-s', '--server s',
            'specify server to send request')
       setn(:port, '-p', '--port p',

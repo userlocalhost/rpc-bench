@@ -10,6 +10,8 @@ module RPCBench
         @driver = ZeroMQ::Server.new opts
       when 'stomp'
         @driver = Stomp::Server.new opts
+      when 'nats'
+        @driver = NATS::Server.new opts
       else
         raise RuntimeError.new("failed to initialize driver of '#{opts[:mode]}'")
       end
