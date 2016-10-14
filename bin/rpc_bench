@@ -2,7 +2,7 @@
 
 require 'rpc_bench'
 
-optobj = RPCBench::Options.new
+optobj = RPCBench::ClientOptions.new
 
 begin
   options = optobj.parse
@@ -13,6 +13,18 @@ rescue OptionParser::MissingArgument, OptionParser::InvalidOption => e
   exit 1
 end
 
-client = RPCBench::Client.new(options)
+server = fork do
+  begin
+    RPCBench::Server.new(options).run
+  rescue Interrupt => e
+    # pass
+  end
+end
 
-client.run
+# delay to setup server
+sleep(0.5)
+
+RPCBench::Client.new(options).run
+
+Process.detach(server)
+Process.kill(:INT, server)

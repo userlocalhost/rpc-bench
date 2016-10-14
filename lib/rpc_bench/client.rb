@@ -49,10 +49,12 @@ module RPCBench
     private
     def sending_and_receiving
       @pipes = []
+      request_num = @bench_num / @bench_conc
+
       (1..@bench_conc).each do |x|
         pipe = create_pipe
         fork do
-          write_object(@driver.send(1, @bench_num), pipe.last)
+          write_object(@driver.send(1, request_num), pipe.last)
         end
         @pipes << pipe
       end
